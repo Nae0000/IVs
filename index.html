@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>กฎหาร 16 (Rule of 16) | IV Volatility Calculator</title>
-  <meta name="description" content="เครื่องคำนวณกฎทาร 16 (Rule of 16) สำหรับคำนวณเป้าหมายระยะการแกว่งตัวรายวันจาก Implied Volatility (IV)" />
+  <meta name="description" content="เครื่องคำนวณกฎหาร 16 (Rule of 16) แสดงระดับ 1SD 2SD 3SD จาก Implied Volatility" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -43,19 +43,23 @@
     <div class="formula-card">
       <div class="formula-label">สูตรคำนวณ</div>
       <div class="formula-math">
-        <span class="formula-term">Target Volatility (%)</span>
+        <span class="formula-term">1SD (%)</span>
         <span class="formula-eq">=</span>
         <div class="formula-fraction">
-          <span class="formula-num">Implied Volatility (IV)</span>
+          <span class="formula-num">IV</span>
           <span class="formula-den">16</span>
         </div>
+        <span class="formula-sep">|</span>
+        <span class="formula-term formula-term-2">2SD = 1SD × 2</span>
+        <span class="formula-sep">|</span>
+        <span class="formula-term formula-term-3">3SD = 1SD × 3</span>
       </div>
     </div>
 
     <!-- Main Card -->
     <main class="calculator-card">
 
-      <!-- Inputs (moved to top) -->
+      <!-- Inputs -->
       <div class="inputs-grid">
         <!-- IV Input -->
         <div class="input-section">
@@ -64,22 +68,11 @@
             <label class="section-label" for="iv-input">ค่าความผันผวนแฝง (IV) %</label>
           </div>
           <div class="input-row">
-            <input
-              type="range"
-              id="iv-slider"
-              class="slider blue-slider"
-              min="1" max="200" step="0.5" value="56"
-              aria-label="ปรับค่า IV"
-            />
+            <input type="range" id="iv-slider" class="slider blue-slider"
+              min="1" max="200" step="0.5" value="56" aria-label="ปรับค่า IV" />
             <div class="input-box-wrapper">
-              <input
-                type="number"
-                id="iv-input"
-                class="input-box"
-                value="56"
-                min="0.1" max="999" step="0.5"
-                aria-label="ค่า IV (เปอร์เซ็นต์)"
-              />
+              <input type="number" id="iv-input" class="input-box"
+                value="56" min="0.1" max="999" step="0.5" aria-label="ค่า IV (%)" />
             </div>
           </div>
         </div>
@@ -91,52 +84,90 @@
             <label class="section-label" for="price-input">ราคาอ้างอิง (Price)</label>
           </div>
           <div class="input-row">
-            <input
-              type="range"
-              id="price-slider"
-              class="slider cyan-slider"
-              min="1" max="10000" step="1" value="4700"
-              aria-label="ปรับราคา"
-            />
+            <input type="range" id="price-slider" class="slider cyan-slider"
+              min="1" max="10000" step="1" value="4700" aria-label="ปรับราคา" />
             <div class="input-box-wrapper">
-              <input
-                type="number"
-                id="price-input"
-                class="input-box"
-                value="4700"
-                min="0.01" max="9999999" step="0.5"
-                aria-label="ราคาอ้างอิง"
-              />
+              <input type="number" id="price-input" class="input-box"
+                value="4700" min="0.01" max="9999999" step="0.5" aria-label="ราคาอ้างอิง" />
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Results Summary Bar -->
-      <div class="summary-bar">
-        <div class="summary-item">
-          <div class="summary-label">IV รายปี</div>
-          <div class="summary-value" id="summary-iv">—</div>
+      <!-- SD Probability Legend -->
+      <div class="prob-legend">
+        <div class="prob-item sd1">
+          <span class="prob-badge">1SD</span>
+          <span class="prob-text">โอกาส 68% ที่ราคาอยู่ในช่วงนี้</span>
         </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item">
-          <div class="summary-label">เป้าหมายรายวัน (±)</div>
-          <div class="summary-value accent" id="summary-target">—</div>
+        <div class="prob-item sd2">
+          <span class="prob-badge">2SD</span>
+          <span class="prob-text">โอกาส 95%</span>
         </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item">
-          <div class="summary-label">ราคาเป้าหมายบน</div>
-          <div class="summary-value green" id="summary-upper">—</div>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item">
-          <div class="summary-label">ราคาเป้าหมายล่าง</div>
-          <div class="summary-value red" id="summary-lower">—</div>
+        <div class="prob-item sd3">
+          <span class="prob-badge">3SD</span>
+          <span class="prob-text">โอกาส 99.7%</span>
         </div>
       </div>
 
-      <!-- Chart visualization -->
-      <div class="chart-container" id="chart-container" aria-label="แผนภาพแสดงช่วงราคาเป้าหมาย">
+      <!-- SD Price Table -->
+      <div class="sd-table" aria-live="polite">
+        <!-- Header -->
+        <div class="sd-table-header">
+          <div class="sd-col-label">ระดับ SD</div>
+          <div class="sd-col-move">การเคลื่อนที่ (±%)</div>
+          <div class="sd-col-upper">ราคาเป้าหมายบน</div>
+          <div class="sd-col-lower">ราคาเป้าหมายล่าง</div>
+        </div>
+
+        <!-- 1SD Row -->
+        <div class="sd-row sd1-row">
+          <div class="sd-col-label">
+            <span class="sd-badge sd1-badge">1SD</span>
+            <span class="sd-prob">68%</span>
+          </div>
+          <div class="sd-col-move accent-text" id="move-1sd">—</div>
+          <div class="sd-col-upper">
+            <span class="price-up" id="upper-1sd">—</span>
+          </div>
+          <div class="sd-col-lower">
+            <span class="price-down" id="lower-1sd">—</span>
+          </div>
+        </div>
+
+        <!-- 2SD Row -->
+        <div class="sd-row sd2-row">
+          <div class="sd-col-label">
+            <span class="sd-badge sd2-badge">2SD</span>
+            <span class="sd-prob">95%</span>
+          </div>
+          <div class="sd-col-move sd2-text" id="move-2sd">—</div>
+          <div class="sd-col-upper">
+            <span class="price-up price-2sd" id="upper-2sd">—</span>
+          </div>
+          <div class="sd-col-lower">
+            <span class="price-down price-2sd" id="lower-2sd">—</span>
+          </div>
+        </div>
+
+        <!-- 3SD Row -->
+        <div class="sd-row sd3-row">
+          <div class="sd-col-label">
+            <span class="sd-badge sd3-badge">3SD</span>
+            <span class="sd-prob">99.7%</span>
+          </div>
+          <div class="sd-col-move sd3-text" id="move-3sd">—</div>
+          <div class="sd-col-upper">
+            <span class="price-up price-3sd" id="upper-3sd">—</span>
+          </div>
+          <div class="sd-col-lower">
+            <span class="price-down price-3sd" id="lower-3sd">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Chart -->
+      <div class="chart-container" id="chart-container" aria-label="แผนภาพแสดงช่วงราคาตาม SD">
         <div class="chart-placeholder" id="chart-placeholder">
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none" opacity="0.3">
             <path d="M6 38L14 24L20 30L28 18L36 10L42 14" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -144,65 +175,66 @@
           <p>กรอกข้อมูลเพื่อดูแผนภาพ</p>
         </div>
         <div class="chart-body" id="chart-body" style="display:none">
-          <!-- Upper target line -->
-          <div class="chart-upper-section" id="chart-upper-section">
-            <div class="chart-price-label upper" id="chart-upper-label">—</div>
-            <div class="chart-badge upper-badge" id="upper-badge">+0.00%</div>
-          </div>
-          <!-- Current price -->
-          <div class="chart-current-section" id="chart-current-section">
-            <div class="chart-current-line">
-              <div class="chart-current-dot"></div>
-              <span class="chart-current-text" id="chart-current-text">ราคาปัจจุบัน: —</span>
-            </div>
-            <div class="chart-bg-box">
-              <div class="chart-icon" aria-hidden="true">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <path d="M5 30L11 20L16 24L23 14L29 8L35 12" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <rect x="5" y="28" width="30" height="7" rx="1" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.2)" stroke-width="1"/>
-                  <line x1="5" y1="35" x2="35" y2="35" stroke="rgba(96,165,250,0.15)" stroke-width="1"/>
-                </svg>
-              </div>
+          <!-- 3SD Upper -->
+          <div class="chart-band band-3sd-upper">
+            <div class="band-line sd3-line"></div>
+            <div class="band-label">
+              <span class="band-badge sd3-badge-sm">3SD</span>
+              <span class="band-price sd3-color" id="chart-3sd-upper">—</span>
             </div>
           </div>
-          <!-- Lower target line -->
-          <div class="chart-lower-section" id="chart-lower-section">
-            <div class="chart-badge lower-badge" id="lower-badge">-0.00%</div>
-            <div class="chart-price-label lower" id="chart-lower-label">—</div>
+          <!-- 2SD Upper -->
+          <div class="chart-band band-2sd-upper">
+            <div class="band-line sd2-line"></div>
+            <div class="band-label">
+              <span class="band-badge sd2-badge-sm">2SD</span>
+              <span class="band-price sd2-color" id="chart-2sd-upper">—</span>
+            </div>
           </div>
-          <!-- Arrows -->
-          <div class="chart-arrow upper-arrow" aria-hidden="true">↑</div>
-          <div class="chart-arrow lower-arrow" aria-hidden="true">↓</div>
-        </div>
-      </div>
-
-      <!-- Detail Results -->
-      <div class="result-details" aria-live="polite">
-        <div class="detail-card upper-card">
-          <div class="detail-header">
-            <span class="detail-dot green-dot"></span>
-            <span class="detail-title">ราคาเป้าหมายบน</span>
+          <!-- 1SD Upper -->
+          <div class="chart-band band-1sd-upper">
+            <div class="band-line sd1-line-up"></div>
+            <div class="band-label">
+              <span class="band-badge sd1-badge-sm">1SD</span>
+              <span class="band-price sd1-color" id="chart-1sd-upper">—</span>
+            </div>
           </div>
-          <div class="detail-value green" id="detail-upper">—</div>
-          <div class="detail-change green-text" id="detail-upper-pct">+0.00%</div>
-        </div>
-
-        <div class="detail-card target-card">
-          <div class="detail-header">
-            <span class="detail-dot blue-dot"></span>
-            <span class="detail-title">Target Volatility</span>
+          <!-- Current Price -->
+          <div class="chart-center">
+            <div class="chart-center-line">
+              <div class="chart-center-dot"></div>
+              <span class="chart-center-text" id="chart-price-label">ราคาอ้างอิง: —</span>
+            </div>
+            <div class="chart-center-box">
+              <svg width="38" height="28" viewBox="0 0 38 28" fill="none">
+                <path d="M3 22L9 14L14 18L21 8L27 4L33 8" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>
-          <div class="detail-value accent" id="detail-target">—</div>
-          <div class="detail-sublabel">IV ÷ 16</div>
-        </div>
-
-        <div class="detail-card lower-card">
-          <div class="detail-header">
-            <span class="detail-dot red-dot"></span>
-            <span class="detail-title">ราคาเป้าหมายล่าง</span>
+          <!-- 1SD Lower -->
+          <div class="chart-band band-1sd-lower">
+            <div class="band-label band-label-lower">
+              <span class="band-badge sd1-badge-sm">1SD</span>
+              <span class="band-price sd1-color" id="chart-1sd-lower">—</span>
+            </div>
+            <div class="band-line sd1-line-dn"></div>
           </div>
-          <div class="detail-value red" id="detail-lower">—</div>
-          <div class="detail-change red-text" id="detail-lower-pct">-0.00%</div>
+          <!-- 2SD Lower -->
+          <div class="chart-band band-2sd-lower">
+            <div class="band-label band-label-lower">
+              <span class="band-badge sd2-badge-sm">2SD</span>
+              <span class="band-price sd2-color" id="chart-2sd-lower">—</span>
+            </div>
+            <div class="band-line sd2-line"></div>
+          </div>
+          <!-- 3SD Lower -->
+          <div class="chart-band band-3sd-lower">
+            <div class="band-label band-label-lower">
+              <span class="band-badge sd3-badge-sm">3SD</span>
+              <span class="band-price sd3-color" id="chart-3sd-lower">—</span>
+            </div>
+            <div class="band-line sd3-line"></div>
+          </div>
         </div>
       </div>
 
@@ -210,8 +242,10 @@
       <div class="explanation-box">
         <div class="explanation-icon" aria-hidden="true">💡</div>
         <div class="explanation-text">
-          หากค่า IV = <strong id="exp-iv">—</strong> วันนี้กราฟมีโอกาสแกว่งตัวได้ประมาณ
-          <strong id="exp-target" class="accent-text">—</strong> จากราคาเปิด
+          หากค่า IV = <strong id="exp-iv">—</strong> &nbsp;|&nbsp;
+          1SD = <strong id="exp-1sd" class="sd1-color">—</strong> &nbsp;|&nbsp;
+          2SD = <strong id="exp-2sd" class="sd2-color">—</strong> &nbsp;|&nbsp;
+          3SD = <strong id="exp-3sd" class="sd3-color">—</strong>
         </div>
       </div>
 
