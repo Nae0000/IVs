@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IV Drip Rate Calculator | คำนวณอัตราหยดน้ำเกลือ</title>
+  <meta name="description" content="คำนวณอัตราหยดน้ำเกลือ (IV Drip Rate) แบบ real-time สำหรับบุคลากรทางการแพทย์ คำนวณ drops/min และ mL/hr ได้อย่างรวดเร็ว" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Animated background blobs -->
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4C16 4 10 10 10 18C10 21.31 12.69 24 16 24C19.31 24 22 21.31 22 18C22 10 16 4 16 4Z" fill="url(#dropGrad)" />
+          <path d="M16 28C16 28 8 22 8 14" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="18" r="3" fill="rgba(255,255,255,0.3)" />
+          <defs>
+            <linearGradient id="dropGrad" x1="16" y1="4" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#60a5fa" />
+              <stop offset="1" stop-color="#3b82f6" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>IV Drip Calculator</h1>
+        <p class="subtitle">คำนวณอัตราหยดสารน้ำ</p>
+      </div>
+    </header>
+
+    <!-- Main Calculator Card -->
+    <main class="calculator-card" role="main">
+
+      <!-- Section 1: Volume -->
+      <section class="input-section" aria-labelledby="volume-label">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">💊</span>
+          <label id="volume-label" class="section-label">ปริมาณสารน้ำ</label>
+        </div>
+        <div class="input-group">
+          <input
+            type="number"
+            id="volume"
+            class="input-field"
+            placeholder="0"
+            min="0"
+            step="1"
+            aria-label="ปริมาณสารน้ำ (มิลลิลิตร)"
+            aria-describedby="volume-unit"
+          />
+          <span class="input-unit" id="volume-unit">mL</span>
+        </div>
+
+        <!-- Quick volume presets -->
+        <div class="presets" role="group" aria-label="ปริมาณสารน้ำที่พบบ่อย">
+          <button class="preset-btn" data-target="volume" data-value="250" type="button">250 mL</button>
+          <button class="preset-btn" data-target="volume" data-value="500" type="button">500 mL</button>
+          <button class="preset-btn" data-target="volume" data-value="1000" type="button">1000 mL</button>
+        </div>
+      </section>
+
+      <div class="divider" aria-hidden="true"></div>
+
+      <!-- Section 2: Time -->
+      <section class="input-section" aria-labelledby="time-label">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">⏱️</span>
+          <label id="time-label" class="section-label">ระยะเวลาให้สารน้ำ</label>
+        </div>
+        <div class="time-inputs">
+          <div class="input-group">
+            <input
+              type="number"
+              id="time-hours"
+              class="input-field"
+              placeholder="0"
+              min="0"
+              max="99"
+              step="1"
+              aria-label="ชั่วโมง"
+              aria-describedby="hours-unit"
+            />
+            <span class="input-unit" id="hours-unit">ชม.</span>
+          </div>
+          <span class="time-separator">:</span>
+          <div class="input-group">
+            <input
+              type="number"
+              id="time-minutes"
+              class="input-field"
+              placeholder="0"
+              min="0"
+              max="59"
+              step="1"
+              aria-label="นาที"
+              aria-describedby="minutes-unit"
+            />
+            <span class="input-unit" id="minutes-unit">นาที</span>
+          </div>
+        </div>
+
+        <!-- Quick time presets -->
+        <div class="presets" role="group" aria-label="ระยะเวลาที่พบบ่อย">
+          <button class="preset-btn" data-target="time" data-hours="4" data-minutes="0" type="button">4 ชม.</button>
+          <button class="preset-btn" data-target="time" data-hours="6" data-minutes="0" type="button">6 ชม.</button>
+          <button class="preset-btn" data-target="time" data-hours="8" data-minutes="0" type="button">8 ชม.</button>
+          <button class="preset-btn" data-target="time" data-hours="12" data-minutes="0" type="button">12 ชม.</button>
+        </div>
+      </section>
+
+      <div class="divider" aria-hidden="true"></div>
+
+      <!-- Section 3: Drop Factor -->
+      <section class="input-section" aria-labelledby="dropfactor-label">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">🩺</span>
+          <label id="dropfactor-label" class="section-label">Drop Factor (หยด/mL)</label>
+        </div>
+        <div class="input-group">
+          <input
+            type="number"
+            id="drop-factor"
+            class="input-field"
+            placeholder="0"
+            min="1"
+            step="1"
+            aria-label="Drop Factor (หยดต่อมิลลิลิตร)"
+            aria-describedby="df-unit"
+          />
+          <span class="input-unit" id="df-unit">gtt/mL</span>
+        </div>
+
+        <!-- Drop factor presets -->
+        <div class="presets" role="group" aria-label="Drop factor ที่พบบ่อย">
+          <button class="preset-btn df-preset" data-target="df" data-value="10" type="button">
+            <span class="df-value">10</span>
+            <span class="df-name">Macrodrip</span>
+          </button>
+          <button class="preset-btn df-preset" data-target="df" data-value="15" type="button">
+            <span class="df-value">15</span>
+            <span class="df-name">Standard</span>
+          </button>
+          <button class="preset-btn df-preset" data-target="df" data-value="20" type="button">
+            <span class="df-value">20</span>
+            <span class="df-name">Standard</span>
+          </button>
+          <button class="preset-btn df-preset" data-target="df" data-value="60" type="button">
+            <span class="df-value">60</span>
+            <span class="df-name">Microdrip</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Results -->
+      <div class="results-wrapper" id="results-wrapper" aria-live="polite" aria-atomic="true">
+        <div class="results-grid">
+          <div class="result-card primary-result" id="drip-rate-card">
+            <div class="result-icon" aria-hidden="true">💧</div>
+            <div class="result-label">Drip Rate</div>
+            <div class="result-value" id="drip-rate-display">—</div>
+            <div class="result-unit">หยด / นาที</div>
+          </div>
+          <div class="result-card secondary-result" id="flow-rate-card">
+            <div class="result-icon" aria-hidden="true">🌊</div>
+            <div class="result-label">Flow Rate</div>
+            <div class="result-value" id="flow-rate-display">—</div>
+            <div class="result-unit">mL / ชั่วโมง</div>
+          </div>
+        </div>
+
+        <!-- Detailed breakdown -->
+        <div class="breakdown-panel" id="breakdown-panel" aria-label="รายละเอียดการคำนวณ">
+          <div class="breakdown-title">สูตรคำนวณ</div>
+          <div class="breakdown-formula" id="formula-display">กรุณากรอกข้อมูลเพื่อดูสูตรการคำนวณ</div>
+        </div>
+      </div>
+
+      <!-- Clear button -->
+      <button class="clear-btn" id="clear-btn" type="button" aria-label="ล้างข้อมูลทั้งหมด">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+        </svg>
+        ล้างข้อมูล
+      </button>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>สำหรับบุคลากรทางการแพทย์ • ตรวจสอบผลลัพธ์ก่อนใช้งานเสมอ</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
