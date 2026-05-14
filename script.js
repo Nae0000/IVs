@@ -1,153 +1,146 @@
-/* ============================================================
-   IV DRIP CALCULATOR — JavaScript Logic
-   ============================================================ */
-
 'use strict';
 
-// ---------- DOM References ----------
-const volumeInput    = document.getElementById('volume');
-const hoursInput     = document.getElementById('time-hours');
-const minutesInput   = document.getElementById('time-minutes');
-const dropFactorInput = document.getElementById('drop-factor');
+/* ============================================================
+   RULE OF 16 — Calculation Logic
+   Formula: Target Volatility (%) = IV / 16
+   Upper Price = Price × (1 + targetVol/100)
+   Lower Price = Price × (1 - targetVol/100)
+   ============================================================ */
 
-const dripDisplay    = document.getElementById('drip-rate-display');
-const flowDisplay    = document.getElementById('flow-rate-display');
-const formulaDisplay = document.getElementById('formula-display');
-const breakdownPanel = document.getElementById('breakdown-panel');
-const dripCard       = document.getElementById('drip-rate-card');
-const flowCard       = document.getElementById('flow-rate-card');
-const clearBtn       = document.getElementById('clear-btn');
+// ---------- DOM ----------
+const ivSlider     = document.getElementById('iv-slider');
+const ivInput      = document.getElementById('iv-input');
+const priceSlider  = document.getElementById('price-slider');
+const priceInput   = document.getElementById('price-input');
 
-// ---------- Calculation ----------
+// Summary bar
+const summaryIv     = document.getElementById('summary-iv');
+const summaryTarget = document.getElementById('summary-target');
+const summaryUpper  = document.getElementById('summary-upper');
+const summaryLower  = document.getElementById('summary-lower');
+
+// Chart
+const chartPlaceholder = document.getElementById('chart-placeholder');
+const chartBody        = document.getElementById('chart-body');
+const chartUpperLabel  = document.getElementById('chart-upper-label');
+const chartLowerLabel  = document.getElementById('chart-lower-label');
+const chartCurrentText = document.getElementById('chart-current-text');
+const upperBadge       = document.getElementById('upper-badge');
+const lowerBadge       = document.getElementById('lower-badge');
+
+// Detail results
+const detailUpper    = document.getElementById('detail-upper');
+const detailTarget   = document.getElementById('detail-target');
+const detailLower    = document.getElementById('detail-lower');
+const detailUpperPct = document.getElementById('detail-upper-pct');
+const detailLowerPct = document.getElementById('detail-lower-pct');
+
+// Explanation
+const expIv     = document.getElementById('exp-iv');
+const expTarget = document.getElementById('exp-target');
+
+// ---------- Core calculation ----------
 function calculate() {
-  const volume     = parseFloat(volumeInput.value);
-  const hours      = parseFloat(hoursInput.value) || 0;
-  const minutes    = parseFloat(minutesInput.value) || 0;
-  const dropFactor = parseFloat(dropFactorInput.value);
+  const iv    = parseFloat(ivInput.value);
+  const price = parseFloat(priceInput.value);
 
-  const totalMinutes = hours * 60 + minutes;
-
-  const allFilled = volume > 0 && totalMinutes > 0 && dropFactor > 0;
-
-  if (!allFilled) {
-    resetResults();
+  if (!iv || !price || iv <= 0 || price <= 0) {
+    resetUI();
     return;
   }
 
-  // Formulas
-  // Flow Rate (mL/hr) = Volume / (Total time in hours)
-  const totalHours = totalMinutes / 60;
-  const flowRate = volume / totalHours;
+  // Rule of 16
+  const targetVol = iv / 16; // % daily expected move
 
-  // Drip Rate (drops/min) = (Volume × Drop Factor) / Total time in minutes
-  const dripRate = (volume * dropFactor) / totalMinutes;
+  // Price targets
+  const upperPrice = price * (1 + targetVol / 100);
+  const lowerPrice = price * (1 - targetVol / 100);
 
-  // Update UI
-  setResult(dripDisplay, dripCard, Math.round(dripRate));
-  setResult(flowDisplay, flowCard, flowRate.toFixed(1));
+  // Format numbers
+  const fmtPrice = (n) => n.toLocaleString('th-TH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const fmtPct   = (n) => n.toFixed(2) + '%';
 
-  // Formula breakdown
-  const timeStr = formatTimeString(hours, minutes);
-  breakdownPanel.classList.add('active');
-  formulaDisplay.innerHTML =
-    `Drip Rate = (${volume} × ${dropFactor}) ÷ ${totalMinutes} min<br>` +
-    `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <strong>${Math.round(dripRate)} gtt/min</strong><br><br>` +
-    `Flow Rate = ${volume} mL ÷ ${totalHours.toFixed(2)} hr<br>` +
-    `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <strong>${flowRate.toFixed(1)} mL/hr</strong>`;
+  // --- Update Summary Bar ---
+  animateValue(summaryIv,     `${iv.toFixed(1)}%`);
+  animateValue(summaryTarget, `±${fmtPct(targetVol)}`);
+  animateValue(summaryUpper,  fmtPrice(upperPrice));
+  animateValue(summaryLower,  fmtPrice(lowerPrice));
+
+  // --- Update Chart ---
+  chartPlaceholder.style.display = 'none';
+  chartBody.style.display = 'flex';
+  chartUpperLabel.textContent  = fmtPrice(upperPrice);
+  chartLowerLabel.textContent  = fmtPrice(lowerPrice);
+  chartCurrentText.textContent = `ราคาปัจจุบัน: ${fmtPrice(price)}`;
+  upperBadge.textContent = `+${fmtPct(targetVol)}`;
+  lowerBadge.textContent = `-${fmtPct(targetVol)}`;
+
+  // --- Update Detail Cards ---
+  animateValue(detailUpper,    fmtPrice(upperPrice));
+  animateValue(detailTarget,   fmtPct(targetVol));
+  animateValue(detailLower,    fmtPrice(lowerPrice));
+  detailUpperPct.textContent = `+${fmtPct(targetVol)}`;
+  detailLowerPct.textContent = `-${fmtPct(targetVol)}`;
+
+  // --- Update Explanation ---
+  expIv.textContent     = `${iv.toFixed(1)}%`;
+  expTarget.textContent = `±${fmtPct(targetVol)}`;
 }
 
-function setResult(displayEl, cardEl, value) {
-  // Animate
-  displayEl.classList.remove('updated');
-  void displayEl.offsetWidth; // force reflow
-  displayEl.classList.add('updated');
-
-  displayEl.textContent = value;
-  cardEl.classList.add('has-value');
+function animateValue(el, val) {
+  if (el.textContent === val) return;
+  el.classList.remove('popped');
+  void el.offsetWidth;
+  el.textContent = val;
+  el.classList.add('popped');
 }
 
-function resetResults() {
-  dripDisplay.textContent = '—';
-  flowDisplay.textContent = '—';
-  dripCard.classList.remove('has-value');
-  flowCard.classList.remove('has-value');
-  breakdownPanel.classList.remove('active');
-  formulaDisplay.textContent = 'กรุณากรอกข้อมูลเพื่อดูสูตรการคำนวณ';
+function resetUI() {
+  [summaryIv, summaryTarget, summaryUpper, summaryLower].forEach(el => el.textContent = '—');
+  [detailUpper, detailTarget, detailLower].forEach(el => el.textContent = '—');
+  detailUpperPct.textContent = '+0.00%';
+  detailLowerPct.textContent = '-0.00%';
+  expIv.textContent     = '—';
+  expTarget.textContent = '—';
+  chartPlaceholder.style.display = 'flex';
+  chartBody.style.display = 'none';
 }
 
-function formatTimeString(hours, minutes) {
-  const parts = [];
-  if (hours > 0) parts.push(`${hours} ชม.`);
-  if (minutes > 0) parts.push(`${minutes} นาที`);
-  return parts.join(' ') || '0';
+// ---------- Slider <-> Input Sync ----------
+function syncSliderTrack(slider) {
+  const min = parseFloat(slider.min);
+  const max = parseFloat(slider.max);
+  const val = parseFloat(slider.value);
+  const pct = ((val - min) / (max - min)) * 100;
+  slider.style.setProperty('--pct', pct + '%');
 }
 
-// ---------- Input validation ----------
-function validateMinutes(e) {
-  let val = parseInt(e.target.value, 10);
-  if (val > 59) {
-    e.target.value = 59;
-  } else if (val < 0) {
-    e.target.value = 0;
-  }
-}
-
-// ---------- Preset Buttons ----------
-function handlePreset(e) {
-  const btn = e.currentTarget;
-  const target = btn.dataset.target;
-
-  if (target === 'volume') {
-    volumeInput.value = btn.dataset.value;
-    updateActivePreset(btn, '[data-target="volume"]');
-  } else if (target === 'time') {
-    hoursInput.value   = btn.dataset.hours;
-    minutesInput.value = btn.dataset.minutes;
-    updateActivePreset(btn, '[data-target="time"]');
-  } else if (target === 'df') {
-    dropFactorInput.value = btn.dataset.value;
-    updateActivePreset(btn, '[data-target="df"]');
-  }
-
-  calculate();
-}
-
-function updateActivePreset(activeBtn, selector) {
-  document.querySelectorAll(`.preset-btn${selector}`).forEach(btn => {
-    btn.classList.remove('active');
+function setupSync(slider, inputEl, min, max) {
+  // Slider → Input
+  slider.addEventListener('input', () => {
+    inputEl.value = slider.value;
+    syncSliderTrack(slider);
+    calculate();
   });
-  activeBtn.classList.add('active');
+
+  // Input → Slider (clamp to slider range for visual)
+  inputEl.addEventListener('input', () => {
+    const v = parseFloat(inputEl.value);
+    if (!isNaN(v)) {
+      // Clamp slider value (slider has own min/max, but input can exceed)
+      slider.value = Math.min(Math.max(v, min), max);
+      syncSliderTrack(slider);
+    }
+    calculate();
+  });
+
+  // Init track
+  syncSliderTrack(slider);
 }
 
-// ---------- Clear ----------
-function clearAll() {
-  volumeInput.value     = '';
-  hoursInput.value      = '';
-  minutesInput.value    = '';
-  dropFactorInput.value = '';
-
-  // Remove all active preset states
-  document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-
-  resetResults();
-
-  // Animate card
-  volumeInput.focus();
-}
-
-// ---------- Event Listeners ----------
-[volumeInput, hoursInput, minutesInput, dropFactorInput].forEach(input => {
-  input.addEventListener('input', calculate);
-  input.addEventListener('change', calculate);
-});
-
-minutesInput.addEventListener('input', validateMinutes);
-
-document.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.addEventListener('click', handlePreset);
-});
-
-clearBtn.addEventListener('click', clearAll);
+// Setup syncing
+setupSync(ivSlider,    ivInput,    1,    200);
+setupSync(priceSlider, priceInput, 1, 10000);
 
 // ---------- Init ----------
 calculate();

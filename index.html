@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IV Drip Rate Calculator | คำนวณอัตราหยดน้ำเกลือ</title>
-  <meta name="description" content="คำนวณอัตราหยดน้ำเกลือ (IV Drip Rate) แบบ real-time สำหรับบุคลากรทางการแพทย์ คำนวณ drops/min และ mL/hr ได้อย่างรวดเร็ว" />
+  <title>กฎทาร 16 (Rule of 16) | IV Volatility Calculator</title>
+  <meta name="description" content="เครื่องคำนวณกฎทาร 16 (Rule of 16) สำหรับคำนวณเป้าหมายระยะการแกว่งตัวรายวันจาก Implied Volatility (IV)" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Animated background blobs -->
   <div class="bg-blobs" aria-hidden="true">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -22,183 +21,200 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-icon" aria-hidden="true">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path d="M16 4C16 4 10 10 10 18C10 21.31 12.69 24 16 24C19.31 24 22 21.31 22 18C22 10 16 4 16 4Z" fill="url(#dropGrad)" />
-          <path d="M16 28C16 28 8 22 8 14" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="16" cy="18" r="3" fill="rgba(255,255,255,0.3)" />
-          <defs>
-            <linearGradient id="dropGrad" x1="16" y1="4" x2="16" y2="28" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#60a5fa" />
-              <stop offset="1" stop-color="#3b82f6" />
-            </linearGradient>
-          </defs>
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M4 22L10 14L14 18L19 10L24 6" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 22H24" stroke="rgba(96,165,250,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="24" cy="6" r="2.5" fill="#22d3ee"/>
+          <circle cx="19" cy="10" r="1.5" fill="#60a5fa" opacity="0.7"/>
         </svg>
       </div>
       <div class="header-text">
-        <h1>IV Drip Calculator</h1>
-        <p class="subtitle">คำนวณอัตราหยดสารน้ำ</p>
+        <h1>กฎทาร 16 <span class="title-en">Rule of 16</span></h1>
+        <p class="subtitle">คำนวณเป้าหมายระยะการแกว่งตัวรายวัน</p>
       </div>
     </header>
 
-    <!-- Main Calculator Card -->
-    <main class="calculator-card" role="main">
-
-      <!-- Section 1: Volume -->
-      <section class="input-section" aria-labelledby="volume-label">
-        <div class="section-header">
-          <span class="section-icon" aria-hidden="true">💊</span>
-          <label id="volume-label" class="section-label">ปริมาณสารน้ำ</label>
+    <!-- Formula Card -->
+    <div class="formula-card">
+      <div class="formula-label">สูตรคำนวณ</div>
+      <div class="formula-math">
+        <span class="formula-term">Target Volatility (%)</span>
+        <span class="formula-eq">=</span>
+        <div class="formula-fraction">
+          <span class="formula-num">Implied Volatility (IV)</span>
+          <span class="formula-den">16</span>
         </div>
-        <div class="input-group">
-          <input
-            type="number"
-            id="volume"
-            class="input-field"
-            placeholder="0"
-            min="0"
-            step="1"
-            aria-label="ปริมาณสารน้ำ (มิลลิลิตร)"
-            aria-describedby="volume-unit"
-          />
-          <span class="input-unit" id="volume-unit">mL</span>
-        </div>
+      </div>
+    </div>
 
-        <!-- Quick volume presets -->
-        <div class="presets" role="group" aria-label="ปริมาณสารน้ำที่พบบ่อย">
-          <button class="preset-btn" data-target="volume" data-value="250" type="button">250 mL</button>
-          <button class="preset-btn" data-target="volume" data-value="500" type="button">500 mL</button>
-          <button class="preset-btn" data-target="volume" data-value="1000" type="button">1000 mL</button>
-        </div>
-      </section>
+    <!-- Main Card -->
+    <main class="calculator-card">
 
-      <div class="divider" aria-hidden="true"></div>
-
-      <!-- Section 2: Time -->
-      <section class="input-section" aria-labelledby="time-label">
-        <div class="section-header">
-          <span class="section-icon" aria-hidden="true">⏱️</span>
-          <label id="time-label" class="section-label">ระยะเวลาให้สารน้ำ</label>
+      <!-- Results Summary Bar -->
+      <div class="summary-bar">
+        <div class="summary-item">
+          <div class="summary-label">IV รายปี</div>
+          <div class="summary-value" id="summary-iv">—</div>
         </div>
-        <div class="time-inputs">
-          <div class="input-group">
-            <input
-              type="number"
-              id="time-hours"
-              class="input-field"
-              placeholder="0"
-              min="0"
-              max="99"
-              step="1"
-              aria-label="ชั่วโมง"
-              aria-describedby="hours-unit"
-            />
-            <span class="input-unit" id="hours-unit">ชม.</span>
-          </div>
-          <span class="time-separator">:</span>
-          <div class="input-group">
-            <input
-              type="number"
-              id="time-minutes"
-              class="input-field"
-              placeholder="0"
-              min="0"
-              max="59"
-              step="1"
-              aria-label="นาที"
-              aria-describedby="minutes-unit"
-            />
-            <span class="input-unit" id="minutes-unit">นาที</span>
-          </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <div class="summary-label">เป้าหมายรายวัน (±)</div>
+          <div class="summary-value accent" id="summary-target">—</div>
         </div>
-
-        <!-- Quick time presets -->
-        <div class="presets" role="group" aria-label="ระยะเวลาที่พบบ่อย">
-          <button class="preset-btn" data-target="time" data-hours="4" data-minutes="0" type="button">4 ชม.</button>
-          <button class="preset-btn" data-target="time" data-hours="6" data-minutes="0" type="button">6 ชม.</button>
-          <button class="preset-btn" data-target="time" data-hours="8" data-minutes="0" type="button">8 ชม.</button>
-          <button class="preset-btn" data-target="time" data-hours="12" data-minutes="0" type="button">12 ชม.</button>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <div class="summary-label">ราคาเป้าหมายบน</div>
+          <div class="summary-value green" id="summary-upper">—</div>
         </div>
-      </section>
-
-      <div class="divider" aria-hidden="true"></div>
-
-      <!-- Section 3: Drop Factor -->
-      <section class="input-section" aria-labelledby="dropfactor-label">
-        <div class="section-header">
-          <span class="section-icon" aria-hidden="true">🩺</span>
-          <label id="dropfactor-label" class="section-label">Drop Factor (หยด/mL)</label>
-        </div>
-        <div class="input-group">
-          <input
-            type="number"
-            id="drop-factor"
-            class="input-field"
-            placeholder="0"
-            min="1"
-            step="1"
-            aria-label="Drop Factor (หยดต่อมิลลิลิตร)"
-            aria-describedby="df-unit"
-          />
-          <span class="input-unit" id="df-unit">gtt/mL</span>
-        </div>
-
-        <!-- Drop factor presets -->
-        <div class="presets" role="group" aria-label="Drop factor ที่พบบ่อย">
-          <button class="preset-btn df-preset" data-target="df" data-value="10" type="button">
-            <span class="df-value">10</span>
-            <span class="df-name">Macrodrip</span>
-          </button>
-          <button class="preset-btn df-preset" data-target="df" data-value="15" type="button">
-            <span class="df-value">15</span>
-            <span class="df-name">Standard</span>
-          </button>
-          <button class="preset-btn df-preset" data-target="df" data-value="20" type="button">
-            <span class="df-value">20</span>
-            <span class="df-name">Standard</span>
-          </button>
-          <button class="preset-btn df-preset" data-target="df" data-value="60" type="button">
-            <span class="df-value">60</span>
-            <span class="df-name">Microdrip</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Results -->
-      <div class="results-wrapper" id="results-wrapper" aria-live="polite" aria-atomic="true">
-        <div class="results-grid">
-          <div class="result-card primary-result" id="drip-rate-card">
-            <div class="result-icon" aria-hidden="true">💧</div>
-            <div class="result-label">Drip Rate</div>
-            <div class="result-value" id="drip-rate-display">—</div>
-            <div class="result-unit">หยด / นาที</div>
-          </div>
-          <div class="result-card secondary-result" id="flow-rate-card">
-            <div class="result-icon" aria-hidden="true">🌊</div>
-            <div class="result-label">Flow Rate</div>
-            <div class="result-value" id="flow-rate-display">—</div>
-            <div class="result-unit">mL / ชั่วโมง</div>
-          </div>
-        </div>
-
-        <!-- Detailed breakdown -->
-        <div class="breakdown-panel" id="breakdown-panel" aria-label="รายละเอียดการคำนวณ">
-          <div class="breakdown-title">สูตรคำนวณ</div>
-          <div class="breakdown-formula" id="formula-display">กรุณากรอกข้อมูลเพื่อดูสูตรการคำนวณ</div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <div class="summary-label">ราคาเป้าหมายล่าง</div>
+          <div class="summary-value red" id="summary-lower">—</div>
         </div>
       </div>
 
-      <!-- Clear button -->
-      <button class="clear-btn" id="clear-btn" type="button" aria-label="ล้างข้อมูลทั้งหมด">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-        </svg>
-        ล้างข้อมูล
-      </button>
+      <!-- Chart visualization -->
+      <div class="chart-container" id="chart-container" aria-label="แผนภาพแสดงช่วงราคาเป้าหมาย">
+        <div class="chart-placeholder" id="chart-placeholder">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" opacity="0.3">
+            <path d="M6 38L14 24L20 30L28 18L36 10L42 14" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p>กรอกข้อมูลเพื่อดูแผนภาพ</p>
+        </div>
+        <div class="chart-body" id="chart-body" style="display:none">
+          <!-- Upper target line -->
+          <div class="chart-upper-section" id="chart-upper-section">
+            <div class="chart-price-label upper" id="chart-upper-label">—</div>
+            <div class="chart-badge upper-badge" id="upper-badge">+0.00%</div>
+          </div>
+          <!-- Current price -->
+          <div class="chart-current-section" id="chart-current-section">
+            <div class="chart-current-line">
+              <div class="chart-current-dot"></div>
+              <span class="chart-current-text" id="chart-current-text">ราคาปัจจุบัน: —</span>
+            </div>
+            <div class="chart-bg-box">
+              <div class="chart-icon" aria-hidden="true">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <path d="M5 30L11 20L16 24L23 14L29 8L35 12" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="5" y="28" width="30" height="7" rx="1" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.2)" stroke-width="1"/>
+                  <line x1="5" y1="35" x2="35" y2="35" stroke="rgba(96,165,250,0.15)" stroke-width="1"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Lower target line -->
+          <div class="chart-lower-section" id="chart-lower-section">
+            <div class="chart-badge lower-badge" id="lower-badge">-0.00%</div>
+            <div class="chart-price-label lower" id="chart-lower-label">—</div>
+          </div>
+          <!-- Arrows -->
+          <div class="chart-arrow upper-arrow" aria-hidden="true">↑</div>
+          <div class="chart-arrow lower-arrow" aria-hidden="true">↓</div>
+        </div>
+      </div>
+
+      <!-- Inputs -->
+      <div class="inputs-grid">
+        <!-- IV Input -->
+        <div class="input-section">
+          <div class="section-header">
+            <span class="section-icon" aria-hidden="true">📊</span>
+            <label class="section-label" for="iv-input">ค่าความผันผวนแฝง (IV) %</label>
+          </div>
+          <div class="input-row">
+            <input
+              type="range"
+              id="iv-slider"
+              class="slider blue-slider"
+              min="1" max="200" step="0.5" value="56"
+              aria-label="ปรับค่า IV"
+            />
+            <div class="input-box-wrapper">
+              <input
+                type="number"
+                id="iv-input"
+                class="input-box"
+                value="56"
+                min="0.1" max="999" step="0.5"
+                aria-label="ค่า IV (เปอร์เซ็นต์)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Input -->
+        <div class="input-section">
+          <div class="section-header">
+            <span class="section-icon" aria-hidden="true">💰</span>
+            <label class="section-label" for="price-input">ราคาอ้างอิง (Price)</label>
+          </div>
+          <div class="input-row">
+            <input
+              type="range"
+              id="price-slider"
+              class="slider cyan-slider"
+              min="1" max="10000" step="1" value="4700"
+              aria-label="ปรับราคา"
+            />
+            <div class="input-box-wrapper">
+              <input
+                type="number"
+                id="price-input"
+                class="input-box"
+                value="4700"
+                min="0.01" max="9999999" step="0.5"
+                aria-label="ราคาอ้างอิง"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Results -->
+      <div class="result-details" aria-live="polite">
+        <div class="detail-card upper-card">
+          <div class="detail-header">
+            <span class="detail-dot green-dot"></span>
+            <span class="detail-title">ราคาเป้าหมายบน</span>
+          </div>
+          <div class="detail-value green" id="detail-upper">—</div>
+          <div class="detail-change green-text" id="detail-upper-pct">+0.00%</div>
+        </div>
+
+        <div class="detail-card target-card">
+          <div class="detail-header">
+            <span class="detail-dot blue-dot"></span>
+            <span class="detail-title">Target Volatility</span>
+          </div>
+          <div class="detail-value accent" id="detail-target">—</div>
+          <div class="detail-sublabel">IV ÷ 16</div>
+        </div>
+
+        <div class="detail-card lower-card">
+          <div class="detail-header">
+            <span class="detail-dot red-dot"></span>
+            <span class="detail-title">ราคาเป้าหมายล่าง</span>
+          </div>
+          <div class="detail-value red" id="detail-lower">—</div>
+          <div class="detail-change red-text" id="detail-lower-pct">-0.00%</div>
+        </div>
+      </div>
+
+      <!-- Explanation -->
+      <div class="explanation-box">
+        <div class="explanation-icon" aria-hidden="true">💡</div>
+        <div class="explanation-text">
+          หากค่า IV = <strong id="exp-iv">—</strong> วันนี้กราฟมีโอกาสแกว่งตัวได้ประมาณ
+          <strong id="exp-target" class="accent-text">—</strong> จากราคาเปิด
+        </div>
+      </div>
+
     </main>
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>สำหรับบุคลากรทางการแพทย์ • ตรวจสอบผลลัพธ์ก่อนใช้งานเสมอ</p>
+      <p>สำหรับการศึกษาและประกอบการตัดสินใจ • ตรวจสอบข้อมูลก่อนใช้งานเสมอ</p>
     </footer>
   </div>
 
