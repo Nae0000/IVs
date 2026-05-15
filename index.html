@@ -81,7 +81,7 @@
         <div class="input-section">
           <div class="section-header">
             <span class="section-icon" aria-hidden="true">💰</span>
-            <label class="section-label" for="price-input">ราคาอ้างอิง (Price)</label>
+            <label class="section-label" for="price-input">ราคาอ้างอิง (Futures Price)</label>
           </div>
           <div class="input-row">
             <input type="range" id="price-slider" class="slider cyan-slider"
@@ -89,6 +89,22 @@
             <div class="input-box-wrapper">
               <input type="number" id="price-input" class="input-box"
                 value="4700" min="0.01" max="9999999" step="0.5" aria-label="ราคาอ้างอิง" />
+            </div>
+          </div>
+        </div>
+
+        <!-- CFD Price Input -->
+        <div class="input-section">
+          <div class="section-header">
+            <span class="section-icon" aria-hidden="true">📉</span>
+            <label class="section-label" for="cfd-input">ราคา CFD <span class="cfd-diff-badge" id="cfd-diff-badge"></span></label>
+          </div>
+          <div class="input-row">
+            <input type="range" id="cfd-slider" class="slider orange-slider"
+              min="1" max="10000" step="1" value="4700" aria-label="ปรับราคา CFD" />
+            <div class="input-box-wrapper">
+              <input type="number" id="cfd-input" class="input-box"
+                value="4700" min="0.01" max="9999999" step="0.5" aria-label="ราคา CFD" />
             </div>
           </div>
         </div>
@@ -129,9 +145,11 @@
           <div class="sd-col-move accent-text" id="move-1sd">—</div>
           <div class="sd-col-upper">
             <span class="price-up" id="upper-1sd">—</span>
+            <span class="cfd-sub" id="cfd-upper-1sd"></span>
           </div>
           <div class="sd-col-lower">
             <span class="price-down" id="lower-1sd">—</span>
+            <span class="cfd-sub" id="cfd-lower-1sd"></span>
           </div>
         </div>
 
@@ -144,9 +162,11 @@
           <div class="sd-col-move sd2-text" id="move-2sd">—</div>
           <div class="sd-col-upper">
             <span class="price-up price-2sd" id="upper-2sd">—</span>
+            <span class="cfd-sub" id="cfd-upper-2sd"></span>
           </div>
           <div class="sd-col-lower">
             <span class="price-down price-2sd" id="lower-2sd">—</span>
+            <span class="cfd-sub" id="cfd-lower-2sd"></span>
           </div>
         </div>
 
@@ -159,9 +179,11 @@
           <div class="sd-col-move sd3-text" id="move-3sd">—</div>
           <div class="sd-col-upper">
             <span class="price-up price-3sd" id="upper-3sd">—</span>
+            <span class="cfd-sub" id="cfd-upper-3sd"></span>
           </div>
           <div class="sd-col-lower">
             <span class="price-down price-3sd" id="lower-3sd">—</span>
+            <span class="cfd-sub" id="cfd-lower-3sd"></span>
           </div>
         </div>
       </div>
@@ -179,24 +201,27 @@
           <div class="chart-band band-3sd-upper">
             <div class="band-line sd3-line"></div>
             <div class="band-label">
-              <span class="band-badge sd3-badge-sm">3SD</span>
-              <span class="band-price sd3-color" id="chart-3sd-upper">—</span>
+               <span class="band-badge sd3-badge-sm">3SD</span>
+               <span class="band-price sd3-color" id="chart-3sd-upper">—</span>
+               <span class="chart-cfd-sub" id="chart-cfd-3sd-upper"></span>
             </div>
           </div>
           <!-- 2SD Upper -->
           <div class="chart-band band-2sd-upper">
             <div class="band-line sd2-line"></div>
             <div class="band-label">
-              <span class="band-badge sd2-badge-sm">2SD</span>
-              <span class="band-price sd2-color" id="chart-2sd-upper">—</span>
+               <span class="band-badge sd2-badge-sm">2SD</span>
+               <span class="band-price sd2-color" id="chart-2sd-upper">—</span>
+               <span class="chart-cfd-sub" id="chart-cfd-2sd-upper"></span>
             </div>
           </div>
           <!-- 1SD Upper -->
           <div class="chart-band band-1sd-upper">
             <div class="band-line sd1-line-up"></div>
             <div class="band-label">
-              <span class="band-badge sd1-badge-sm">1SD</span>
-              <span class="band-price sd1-color" id="chart-1sd-upper">—</span>
+               <span class="band-badge sd1-badge-sm">1SD</span>
+               <span class="band-price sd1-color" id="chart-1sd-upper">—</span>
+               <span class="chart-cfd-sub" id="chart-cfd-1sd-upper"></span>
             </div>
           </div>
           <!-- Current Price -->
@@ -214,24 +239,27 @@
           <!-- 1SD Lower -->
           <div class="chart-band band-1sd-lower">
             <div class="band-label band-label-lower">
-              <span class="band-badge sd1-badge-sm">1SD</span>
-              <span class="band-price sd1-color" id="chart-1sd-lower">—</span>
+               <span class="band-badge sd1-badge-sm">1SD</span>
+               <span class="band-price sd1-color" id="chart-1sd-lower">—</span>
+               <span class="chart-cfd-sub" id="chart-cfd-1sd-lower"></span>
             </div>
             <div class="band-line sd1-line-dn"></div>
           </div>
           <!-- 2SD Lower -->
           <div class="chart-band band-2sd-lower">
             <div class="band-label band-label-lower">
-              <span class="band-badge sd2-badge-sm">2SD</span>
-              <span class="band-price sd2-color" id="chart-2sd-lower">—</span>
+               <span class="band-badge sd2-badge-sm">2SD</span>
+               <span class="band-price sd2-color" id="chart-2sd-lower">—</span>
+               <span class="chart-cfd-sub" id="chart-cfd-2sd-lower"></span>
             </div>
             <div class="band-line sd2-line"></div>
           </div>
           <!-- 3SD Lower -->
           <div class="chart-band band-3sd-lower">
             <div class="band-label band-label-lower">
-              <span class="band-badge sd3-badge-sm">3SD</span>
-              <span class="band-price sd3-color" id="chart-3sd-lower">—</span>
+               <span class="band-badge sd3-badge-sm">3SD</span>
+               <span class="band-price sd3-color" id="chart-3sd-lower">—</span>
+               <span class="chart-cfd-sub" id="chart-cfd-3sd-lower"></span>
             </div>
             <div class="band-line sd3-line"></div>
           </div>

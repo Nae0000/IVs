@@ -23,6 +23,9 @@ const ivSlider    = document.getElementById('iv-slider');
 const ivInput     = document.getElementById('iv-input');
 const priceSlider = document.getElementById('price-slider');
 const priceInput  = document.getElementById('price-input');
+const cfdSlider   = document.getElementById('cfd-slider');
+const cfdInput    = document.getElementById('cfd-input');
+const cfdDiffBadge = document.getElementById('cfd-diff-badge');
 
 // SD Table
 const move1sd  = document.getElementById('move-1sd');
@@ -34,6 +37,22 @@ const upper3sd = document.getElementById('upper-3sd');
 const lower1sd = document.getElementById('lower-1sd');
 const lower2sd = document.getElementById('lower-2sd');
 const lower3sd = document.getElementById('lower-3sd');
+
+// CFD sub-labels in SD Table
+const cfdUpper1sd = document.getElementById('cfd-upper-1sd');
+const cfdUpper2sd = document.getElementById('cfd-upper-2sd');
+const cfdUpper3sd = document.getElementById('cfd-upper-3sd');
+const cfdLower1sd = document.getElementById('cfd-lower-1sd');
+const cfdLower2sd = document.getElementById('cfd-lower-2sd');
+const cfdLower3sd = document.getElementById('cfd-lower-3sd');
+
+// CFD sub-labels in Chart
+const chartCfd1sdUpper = document.getElementById('chart-cfd-1sd-upper');
+const chartCfd2sdUpper = document.getElementById('chart-cfd-2sd-upper');
+const chartCfd3sdUpper = document.getElementById('chart-cfd-3sd-upper');
+const chartCfd1sdLower = document.getElementById('chart-cfd-1sd-lower');
+const chartCfd2sdLower = document.getElementById('chart-cfd-2sd-lower');
+const chartCfd3sdLower = document.getElementById('chart-cfd-3sd-lower');
 
 // Chart
 const chartPlaceholder  = document.getElementById('chart-placeholder');
@@ -73,6 +92,7 @@ function animVal(el, val) {
 function calculate() {
   const iv    = parseFloat(ivInput.value);
   const price = parseFloat(priceInput.value);
+  const cfd   = parseFloat(cfdInput.value);
 
   if (!iv || !price || iv <= 0 || price <= 0) {
     resetUI();
@@ -84,13 +104,41 @@ function calculate() {
   const sd2 = sd1 * 2;
   const sd3 = sd1 * 3;
 
-  // Price targets
+  // Price targets (Futures)
   const u1 = price * (1 + sd1 / 100);
   const l1 = price * (1 - sd1 / 100);
   const u2 = price * (1 + sd2 / 100);
   const l2 = price * (1 - sd2 / 100);
   const u3 = price * (1 + sd3 / 100);
   const l3 = price * (1 - sd3 / 100);
+
+  // CFD diff & CFD price targets
+  const hasCfd = !isNaN(cfd) && cfd > 0;
+  const diff   = hasCfd ? price - cfd : 0;
+
+  // Update diff badge
+  if (hasCfd && diff !== 0) {
+    const sign = diff > 0 ? '+' : '';
+    cfdDiffBadge.textContent = `ส่วนต่าง ${sign}${diff.toFixed(2)}`;
+    cfdDiffBadge.className = 'cfd-diff-badge ' + (diff > 0 ? 'diff-pos' : 'diff-neg');
+  } else {
+    cfdDiffBadge.textContent = '';
+    cfdDiffBadge.className = 'cfd-diff-badge';
+  }
+
+  // Helper: CFD adjusted target
+  function cfdTarget(futuresTarget) {
+    return hasCfd ? futuresTarget - diff : null;
+  }
+
+  function setCfdSub(el, futuresTarget) {
+    const v = cfdTarget(futuresTarget);
+    if (v !== null && hasCfd) {
+      el.textContent = `(CFD ${fmtPrice(v)})`;
+    } else {
+      el.textContent = '';
+    }
+  }
 
   // --- SD Table ---
   animVal(move1sd, fmtPct(sd1));
@@ -105,6 +153,14 @@ function calculate() {
   animVal(lower2sd, fmtPrice(l2));
   animVal(lower3sd, fmtPrice(l3));
 
+  // CFD sub-labels in SD Table
+  setCfdSub(cfdUpper1sd, u1);
+  setCfdSub(cfdUpper2sd, u2);
+  setCfdSub(cfdUpper3sd, u3);
+  setCfdSub(cfdLower1sd, l1);
+  setCfdSub(cfdLower2sd, l2);
+  setCfdSub(cfdLower3sd, l3);
+
   // --- Chart ---
   chartPlaceholder.style.display = 'none';
   chartBody.style.display = 'flex';
@@ -117,6 +173,14 @@ function calculate() {
   animVal(chart1sdLower, fmtPrice(l1));
   animVal(chart2sdLower, fmtPrice(l2));
   animVal(chart3sdLower, fmtPrice(l3));
+
+  // CFD sub-labels in Chart
+  setCfdSub(chartCfd3sdUpper, u3);
+  setCfdSub(chartCfd2sdUpper, u2);
+  setCfdSub(chartCfd1sdUpper, u1);
+  setCfdSub(chartCfd1sdLower, l1);
+  setCfdSub(chartCfd2sdLower, l2);
+  setCfdSub(chartCfd3sdLower, l3);
 
   // --- Explanation ---
   expIv.textContent  = `${iv.toFixed(1)}%`;
@@ -132,6 +196,16 @@ function resetUI() {
    lower1sd, lower2sd, lower3sd,
    chart1sdUpper, chart2sdUpper, chart3sdUpper,
    chart1sdLower, chart2sdLower, chart3sdLower].forEach(el => { if(el) el.textContent = dash; });
+
+  // Clear CFD sub-labels
+  [cfdUpper1sd, cfdUpper2sd, cfdUpper3sd,
+   cfdLower1sd, cfdLower2sd, cfdLower3sd,
+   chartCfd1sdUpper, chartCfd2sdUpper, chartCfd3sdUpper,
+   chartCfd1sdLower, chartCfd2sdLower, chartCfd3sdLower
+  ].forEach(el => { if(el) el.textContent = ''; });
+
+  cfdDiffBadge.textContent = '';
+  cfdDiffBadge.className = 'cfd-diff-badge';
 
   expIv.textContent  = dash;
   exp1sd.textContent = dash;
@@ -170,6 +244,7 @@ function setupSync(slider, inputEl, sliderMin, sliderMax) {
 
 setupSync(ivSlider,    ivInput,    1,    200);
 setupSync(priceSlider, priceInput, 1, 10000);
+setupSync(cfdSlider,   cfdInput,   1, 10000);
 
 // ---------- Init ----------
 calculate();
